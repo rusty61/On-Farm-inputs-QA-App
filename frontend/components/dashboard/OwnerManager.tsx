@@ -40,10 +40,10 @@ export function OwnerManager({ owners, selectedOwnerId, onSelect, onCreate, load
     <SectionCard
       title="Owners"
       description="Grower organisations anchor Supabase row-level security boundaries."
-      action={<span className="text-xs text-slate-400">{owners.length} owners</span>}
+      action={<span className="text-xs text-slate-300">{owners.length} owners</span>}
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-        <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-white/10 bg-surface-200/60 p-4">
+        <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
           Owner name
           <input
             type="text"
@@ -56,7 +56,7 @@ export function OwnerManager({ owners, selectedOwnerId, onSelect, onCreate, load
         <button
           type="submit"
           disabled={submitting || loading}
-          className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-gradient-to-r from-brand to-accent px-3 py-2 text-sm font-semibold text-white shadow transition hover:from-brand-light hover:to-accent-light disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Creating…' : 'Add owner'}
         </button>
@@ -69,8 +69,10 @@ export function OwnerManager({ owners, selectedOwnerId, onSelect, onCreate, load
             <button
               type="button"
               onClick={() => onSelect(owner.id)}
-              className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left transition hover:border-brand ${
-                selectedOwnerId === owner.id ? 'border-brand bg-brand/10 text-white' : 'border-slate-800 bg-slate-950/50'
+              className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left transition ${
+                selectedOwnerId === owner.id
+                  ? 'border-accent/60 bg-surface-200/80 text-white shadow'
+                  : 'border-white/10 bg-surface-100/60 text-slate-200 hover:border-accent/40'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -85,7 +87,7 @@ export function OwnerManager({ owners, selectedOwnerId, onSelect, onCreate, load
           </li>
         ))}
         {owners.length === 0 ? (
-          <li className="rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-4 text-xs text-slate-400">
+          <li className="rounded-xl border border-dashed border-white/10 bg-surface-100/40 p-4 text-xs text-slate-400">
             No owners yet. Create one to unlock farms, paddocks, mixes, and applications.
           </li>
         ) : null}

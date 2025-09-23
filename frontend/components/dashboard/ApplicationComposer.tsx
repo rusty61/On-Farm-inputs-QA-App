@@ -91,9 +91,9 @@ export function ApplicationComposer({
       title="Spray applications"
       description="Draft spray applications by selecting mix, paddocks, telemetry, and operator details."
     >
-      <form onSubmit={handleCreate} className="flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+      <form onSubmit={handleCreate} className="flex flex-col gap-4 rounded-xl border border-white/10 bg-surface-200/60 p-4">
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Owner
             <select value={draft.ownerId ?? ''} onChange={handleOwnerChange} required className="mt-1">
               <option value="">Select owner</option>
@@ -104,7 +104,7 @@ export function ApplicationComposer({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Farm
             <select value={draft.farmId ?? ''} onChange={handleFarmChange} className="mt-1">
               <option value="">All farms</option>
@@ -117,7 +117,7 @@ export function ApplicationComposer({
           </label>
         </div>
 
-        <label className="flex flex-col gap-2 text-xs uppercase tracking-wide text-slate-400">
+        <label className="flex flex-col gap-2 text-xs uppercase tracking-wide text-slate-300">
           Mix
           <select value={draft.mixId ?? ''} onChange={handleMixChange} required className="mt-1">
             <option value="">Select mix</option>
@@ -129,7 +129,7 @@ export function ApplicationComposer({
           </select>
         </label>
 
-        <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/60 p-4">
+        <div className="rounded-xl border border-dashed border-white/10 bg-surface-100/50 p-4">
           <h3 className="text-sm font-semibold text-white">Paddocks</h3>
           <p className="mt-1 text-xs text-slate-400">
             Capture at least one paddock. GPS telemetry recorded earlier will attach automatically.
@@ -140,15 +140,15 @@ export function ApplicationComposer({
                 key={paddock.id}
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition ${
                   draft.paddockIds.includes(paddock.id)
-                    ? 'border-brand bg-brand/10 text-white'
-                    : 'border-slate-800 bg-slate-950/50'
+                    ? 'border-accent/60 bg-surface-200/80 text-white shadow'
+                    : 'border-white/10 bg-surface-100/60 text-slate-200 hover:border-accent/40'
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={draft.paddockIds.includes(paddock.id)}
                   onChange={() => togglePaddockSelection(paddock.id)}
-                  className="h-4 w-4 accent-brand"
+                  className="h-4 w-4 accent-accent"
                 />
                 <span>{paddock.name}</span>
               </label>
@@ -160,7 +160,7 @@ export function ApplicationComposer({
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Operator name
             <input
               type="text"
@@ -170,7 +170,7 @@ export function ApplicationComposer({
               required
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Water source
             <input
               type="text"
@@ -182,7 +182,7 @@ export function ApplicationComposer({
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Started at
             <input
               type="datetime-local"
@@ -191,7 +191,7 @@ export function ApplicationComposer({
               required
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Finished at
             <input
               type="datetime-local"
@@ -203,7 +203,7 @@ export function ApplicationComposer({
           </label>
         </div>
 
-        <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+        <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
           Notes
           <textarea
             value={draft.notes ?? ''}
@@ -216,13 +216,13 @@ export function ApplicationComposer({
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-gradient-to-r from-brand to-accent px-4 py-2 text-sm font-semibold text-white shadow transition hover:from-brand-light hover:to-accent-light disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? 'Submitting…' : 'Create application'}
         </button>
       </form>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+      <div className="rounded-xl border border-white/10 bg-surface-100/60 p-4">
         <h3 className="text-sm font-semibold text-white">Recent applications</h3>
         <p className="mt-1 text-xs text-slate-400">
           Select an application to trigger weather fetch, finalisation, or authoritative PDF exports.
@@ -233,10 +233,10 @@ export function ApplicationComposer({
               <button
                 type="button"
                 onClick={() => onSelectApplication(application.id)}
-                className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left transition hover:border-brand ${
+                className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left transition ${
                   selectedApplicationId === application.id
-                    ? 'border-brand bg-brand/10 text-white'
-                    : 'border-slate-800 bg-slate-950/50'
+                    ? 'border-accent/60 bg-surface-200/80 text-white shadow'
+                    : 'border-white/10 bg-surface-100/60 text-slate-200 hover:border-accent/40'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -253,7 +253,7 @@ export function ApplicationComposer({
             </li>
           ))}
           {applications.length === 0 ? (
-            <li className="rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-4 text-xs text-slate-400">
+            <li className="rounded-xl border border-dashed border-white/10 bg-surface-100/40 p-4 text-xs text-slate-400">
               Applications will appear here once drafted.
             </li>
           ) : null}
@@ -262,7 +262,7 @@ export function ApplicationComposer({
           <button
             type="button"
             onClick={() => onFinalize(selectedApplicationId)}
-            className="mt-4 inline-flex items-center rounded-md border border-brand px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand/10"
+            className="mt-4 inline-flex items-center rounded-md bg-gradient-to-r from-brand to-accent px-4 py-2 text-sm font-semibold text-white shadow transition hover:from-brand-light hover:to-accent-light"
           >
             Finalise application
           </button>

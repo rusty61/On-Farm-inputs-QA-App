@@ -109,9 +109,9 @@ export function PaddockManager({
         </select>
       }
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-white/10 bg-surface-200/60 p-4">
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Paddock name
             <input
               type="text"
@@ -121,7 +121,7 @@ export function PaddockManager({
               required
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Area (ha)
             <input
               type="number"
@@ -136,7 +136,7 @@ export function PaddockManager({
         <button
           type="submit"
           disabled={!selectedOwnerId || !selectedFarmId || submitting}
-          className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-gradient-to-r from-brand to-accent px-3 py-2 text-sm font-semibold text-white shadow transition hover:from-brand-light hover:to-accent-light disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Saving…' : 'Add paddock'}
         </button>
@@ -147,7 +147,7 @@ export function PaddockManager({
       <ul className="flex flex-col gap-2">
         {filteredPaddocks.map((paddock) => (
           <li key={paddock.id}>
-            <div className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+            <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-surface-100/60 p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-white">{paddock.name}</p>
@@ -161,7 +161,7 @@ export function PaddockManager({
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
                 {paddock.gpsPoint ? (
-                  <p className="rounded-md bg-slate-900 px-3 py-1 text-slate-200">
+                  <p className="rounded-md bg-surface-200/70 px-3 py-1 text-slate-200">
                     Lat {paddock.gpsPoint.latitude.toFixed(5)}, Lng {paddock.gpsPoint.longitude.toFixed(5)}
                     {paddock.gpsAccuracyM ? ` (±${paddock.gpsAccuracyM.toFixed(1)} m)` : ''}
                   </p>
@@ -171,7 +171,7 @@ export function PaddockManager({
                 <button
                   type="button"
                   onClick={() => handleGpsCapture(paddock.id)}
-                  className="rounded-md border border-brand px-3 py-1 text-xs font-semibold text-brand transition hover:bg-brand/10"
+                  className="rounded-md border border-accent/60 px-3 py-1 text-xs font-semibold text-accent transition hover:bg-accent/10"
                 >
                   Capture GPS
                 </button>
@@ -180,7 +180,7 @@ export function PaddockManager({
           </li>
         ))}
         {filteredPaddocks.length === 0 ? (
-          <li className="rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-4 text-xs text-slate-400">
+          <li className="rounded-xl border border-dashed border-white/10 bg-surface-100/40 p-4 text-xs text-slate-400">
             {selectedFarmId
               ? 'No paddocks captured for this farm yet.'
               : 'Filter by farm to manage paddock GPS telemetry.'}

@@ -49,30 +49,38 @@ erDiagram
   applications ||--o{ application_paddocks : "has"
 
   owners {
-    uuid owner_id PK
-    text owner_name
+    uuid id PK
+    text name
+    timestamptz created_at
   }
   profiles {
     uuid user_id PK
     uuid owner_id FK
     text full_name
     text role
+    timestamptz created_at
   }
   farms {
-    uuid farm_id PK
+    uuid id PK
     uuid owner_id FK
-    text farm_name
+    text name
+    text notes
+    timestamptz created_at
   }
   paddocks {
-    uuid paddock_id PK
+    uuid id PK
     uuid owner_id FK
     uuid farm_id FK
-    text paddock_name
-    numeric area_ha
-    jsonb boundary_geojson
+    text name
+    numeric area_hectares
+    numeric gps_latitude
+    numeric gps_longitude
+    numeric gps_accuracy_m
+    timestamptz gps_updated_at
+    timestamptz created_at
   }
   mixes {
-    uuid mix_id PK
+    uuid id PK
     uuid owner_id FK
     text name
   }
@@ -84,28 +92,30 @@ erDiagram
     text rate_unit
   }
   applications {
-    uuid application_id PK
+    uuid id PK
     uuid owner_id FK
-    uuid mix_id FK
+    uuid mix_id
     uuid operator_user_id
     timestamptz started_at
     timestamptz finished_at
     bool finalized
-    geography gps_point
+    text notes
+    text water_source
     numeric wind_speed_ms
     numeric wind_direction_deg
     numeric temp_c
     numeric humidity_pct
+    timestamptz created_at
   }
   application_paddocks {
-    uuid link_id PK
+    uuid id PK
     uuid owner_id FK
     uuid application_id FK
     uuid paddock_id FK
-    geography gps_point
+    numeric gps_latitude
+    numeric gps_longitude
     numeric gps_accuracy_m
     timestamptz gps_captured_at
-    bool gps_within_boundary
   }
 ```
 

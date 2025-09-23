@@ -41,67 +41,88 @@ index 667956ad655e1cca32d955feb4527679445d7eec..74ab103420df2349a325a79b961f9344
 +```
  
 +## Data Relationships
-+Owner-scoped data spans mixes, applications, and location records stored in Supabase. The data model links owners to farms and paddocks, captures per-application weather and GPS metadata, and tracks mix compositions for spray events.
- 
-+```mermaid
- erDiagram
-   owners ||--o{ profiles : "has"
-   owners ||--o{ farms : "has"
-   owners ||--o{ paddocks : "has"
-   owners ||--o{ mixes : "has"
-   mixes ||--o{ mix_items : "has"
-   owners ||--o{ applications : "owns"
-   applications ||--o{ application_paddocks : "has"
- 
-   owners {
-     uuid owner_id PK
-     text owner_name
-   }
-   profiles {
-     uuid user_id PK
-     uuid owner_id FK
-     text full_name
-     text role
-   }
-   farms {
-     uuid farm_id PK
-     uuid owner_id FK
-     text farm_name
-   }
-   paddocks {
-diff --git a/docs/DesignBrief.md b/docs/DesignBrief.md
-index 667956ad655e1cca32d955feb4527679445d7eec..74ab103420df2349a325a79b961f93446a926b35 100644
---- a/docs/DesignBrief.md
-+++ b/docs/DesignBrief.md
-@@ -77,55 +85,72 @@ erDiagram
-   }
-   applications {
-     uuid application_id PK
-     uuid owner_id FK
-     uuid mix_id FK
-     uuid operator_user_id
-     timestamptz started_at
-     timestamptz finished_at
-     bool finalized
-     geography gps_point
-     numeric wind_speed_ms
-     numeric wind_direction_deg
-     numeric temp_c
-     numeric humidity_pct
-   }
-   application_paddocks {
-     uuid link_id PK
-     uuid owner_id FK
-     uuid application_id FK
-     uuid paddock_id FK
-     geography gps_point
-     numeric gps_accuracy_m
-     timestamptz gps_captured_at
-     bool gps_within_boundary
-   }
-+```
-+
-+## End-to-End Workflow
+Owner-scoped tables capture user profiles, farms, paddocks, spray applications, and related telemetry. Each record mirrors the SQLAlchemy models in `apps/backend/app/models.py`, ensuring GPS, weather, and metadata columns stay in sync with the backend schema.
+
+```mermaid
+erDiagram
+  owners ||--o{ profiles : "has"
+  owners ||--o{ farms : "has"
+  owners ||--o{ paddocks : "has"
+  farms ||--o{ paddocks : "contains"
+  owners ||--o{ applications : "owns"
+  applications ||--o{ application_paddocks : "covers"
+  paddocks ||--o{ application_paddocks : "mapped in"
+  owners ||--o{ blynk_stations : "configures"
+
+  owners {
+    uuid id PK
+    text name
+    timestamptz created_at
+  }
+  profiles {
+    uuid user_id PK
+    uuid owner_id FK
+    text full_name
+    text role
+    timestamptz created_at
+  }
+  farms {
+    uuid id PK
+    uuid owner_id FK
+    text name
+    text notes
+    timestamptz created_at
+  }
+  paddocks {
+    uuid id PK
+    uuid owner_id FK
+    uuid farm_id FK
+    text name
+    numeric area_hectares
+    numeric gps_latitude
+    numeric gps_longitude
+    numeric gps_accuracy_m
+    timestamptz gps_updated_at
+    timestamptz created_at
+  }
+  applications {
+    uuid id PK
+    uuid owner_id FK
+    uuid mix_id
+    uuid operator_user_id
+    timestamptz started_at
+    timestamptz finished_at
+    bool finalized
+    text notes
+    text water_source
+    numeric wind_speed_ms
+    numeric wind_direction_deg
+    numeric temp_c
+    numeric humidity_pct
+    timestamptz created_at
+  }
+  application_paddocks {
+    uuid id PK
+    uuid owner_id FK
+    uuid application_id FK
+    uuid paddock_id FK
+    numeric gps_latitude
+    numeric gps_longitude
+    numeric gps_accuracy_m
+    timestamptz gps_captured_at
+  }
+  blynk_stations {
+    uuid id PK
+    uuid owner_id FK
+    text station_id
+    text name
+    text read_url
+    text auth_token
+    timestamptz created_at
+  }
+```
+
+## End-to-End Workflow
 +A typical spray record flows from paddock selection and GPS capture through weather enrichment, finalization, and PDF export. The sequence below shows how the frontend coordinates with FastAPI services, Supabase, and the Blynk weather webhook to deliver audit-ready records.
  
 -  sequenceDiagram

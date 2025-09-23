@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Spray Application {{ application.id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', Arial, sans-serif;
+        font-size: 13px;
+        color: #222;
+        background: #f9fafb;
+        margin: 0;
+        padding: 20px;
+      }
+      header {
+        border-bottom: 3px solid #0b6ef5;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        background: linear-gradient(90deg, #0b6ef5, #00c853);
+        color: white;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        padding: 16px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      }
+      th, td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
+        text-align: left;
+      }
+      th {
+        background: #eef5ff;
+        font-weight: 600;
+      }
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .watermark {
+        position: fixed;
+        top: 40%;
+        left: 12%;
+        font-size: 56px;
+        font-weight: 600;
+        background: linear-gradient(90deg, #0b6ef5, #00c853);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        opacity: 0.15;
+        transform: rotate(-25deg);
+        z-index: -1;
+      }
+      .section-title {
+        font-size: 15px;
+        margin: 28px 0 10px;
+        font-weight: 600;
+        border-left: 5px solid #0b6ef5;
+        padding-left: 8px;
+        color: #0b6ef5;
+      }
+      .highlight-box {
+        background: #ffffff;
+        border-left: 4px solid #00c853;
+        padding: 10px 12px;
+        border-radius: 6px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
+      footer {
+        margin-top: 40px;
+        font-size: 11px;
+        color: #666;
+        text-align: center;
+      }
+      .qr {
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="watermark">AgriNet Record</div>
+    <header>
+      <div class="meta">
+        <div>
+          <h1>{{ owner.name or 'Owner' }}</h1>
+          <p>
+            Application ID: {{ application.id }}<br />
+            Started: {{ application.started_at }}<br />
+            Finalized: {{ 'Yes' if application.finalized else 'No' }}
+          </p>
+        </div>
+        {% if qr_code %}
+        <div class="qr">
+          <img src="{{ qr_code }}" alt="QR code" />
+          {% if record_url %}
+          <div style="font-size: 11px; margin-top: 4px;">{{ record_url }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </header>
+
+    <h2 class="section-title">Paddocks</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Accuracy (m)</th>
+          <th>Captured</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for paddock in paddocks %}
+        <tr>
+          <td>{{ paddock.name }}</td>
+          <td>{{ paddock.gps_latitude or '-' }}</td>
+          <td>{{ paddock.gps_longitude or '-' }}</td>
+          <td>{{ paddock.gps_accuracy_m or '-' }}</td>
+          <td>{{ paddock.gps_captured_at or '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2 class="section-title">Weather Snapshot</h2>
+    <div class="highlight-box">
+      <table>
+        <tbody>
+          <tr>
+            <th>Wind Speed (m/s)</th>
+            <td>{{ weather.wind_speed_ms or 'n/a' }}</td>
+          </tr>
+          <tr>
+            <th>Wind Direction (°)</th>
+            <td>{{ weather.wind_direction_deg or 'n/a' }}</td>
+          </tr>
+          <tr>
+            <th>Temperature (°C)</th>
+            <td>{{ weather.temp_c or 'n/a' }}</td>
+          </tr>
+          <tr>
+            <th>Humidity (%)</th>
+            <td>{{ weather.humidity_pct or 'n/a' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title">Notes</h2>
+    <div class="highlight-box">
+      <p>{{ application.notes or '—' }}</p>
+    </div>
+
+    <footer>
+      <p>Generated at {{ generated_at }} UTC</p>
+    </footer>
+  </body>
+</html>

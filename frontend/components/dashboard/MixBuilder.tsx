@@ -75,11 +75,11 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
     <SectionCard
       title="Tank mixes"
       description="Define reusable chemical mixes with total water volume per application."
-      action={<span className="text-xs text-slate-400">{mixes.length} mixes</span>}
+      action={<span className="text-xs text-slate-300">{mixes.length} mixes</span>}
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-white/10 bg-surface-200/60 p-4">
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Mix name
             <input
               type="text"
@@ -89,7 +89,7 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
               required
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Water (L)
             <input
               type="number"
@@ -102,10 +102,10 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
           </label>
         </div>
 
-        <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/60 p-4">
+        <div className="rounded-xl border border-dashed border-white/10 bg-surface-100/50 p-4">
           <h3 className="text-sm font-semibold text-white">Mix items</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-[2fr,1fr]">
-            <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+            <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
               Chemical
               <input
                 type="text"
@@ -114,7 +114,7 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
                 placeholder="Glyphosate"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+            <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
               Rate (L/ha)
               <input
                 type="number"
@@ -126,7 +126,7 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
               />
             </label>
           </div>
-          <label className="mt-3 flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+          <label className="mt-3 flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
             Notes
             <input
               type="text"
@@ -138,14 +138,14 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
           <button
             type="button"
             onClick={addDraftItem}
-            className="mt-3 inline-flex w-fit items-center rounded-md border border-brand px-3 py-1 text-xs font-semibold text-brand transition hover:bg-brand/10"
+            className="mt-3 inline-flex w-fit items-center rounded-md border border-accent/60 px-3 py-1 text-xs font-semibold text-accent transition hover:bg-accent/10"
           >
             Add chemical
           </button>
           {items.length ? (
             <ul className="mt-4 flex flex-col gap-2 text-xs">
               {items.map((item, index) => (
-                <li key={`${item.chemical}-${index}`} className="flex items-center justify-between rounded-lg bg-slate-950 px-3 py-2">
+                <li key={`${item.chemical}-${index}`} className="flex items-center justify-between rounded-lg bg-surface-100/60 px-3 py-2">
                   <div>
                     <p className="font-semibold text-slate-100">{item.chemical}</p>
                     <p className="text-slate-400">{item.rateLPerHa} L/ha</p>
@@ -169,7 +169,7 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
         <button
           type="submit"
           disabled={!selectedOwnerId || submitting}
-          className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-gradient-to-r from-brand to-accent px-3 py-2 text-sm font-semibold text-white shadow transition hover:from-brand-light hover:to-accent-light disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Saving…' : 'Save mix'}
         </button>
@@ -182,8 +182,10 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
             <button
               type="button"
               onClick={() => onSelectMix(mix.id)}
-              className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left transition hover:border-brand ${
-                selectedMixId === mix.id ? 'border-brand bg-brand/10 text-white' : 'border-slate-800 bg-slate-950/50'
+              className={`flex w-full flex-col rounded-xl border px-4 py-3 text-left transition ${
+                selectedMixId === mix.id
+                  ? 'border-accent/60 bg-surface-200/80 text-white shadow'
+                  : 'border-white/10 bg-surface-100/60 text-slate-200 hover:border-accent/40'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -197,7 +199,7 @@ export function MixBuilder({ mixes, selectedOwnerId, selectedMixId, onSelectMix,
           </li>
         ))}
         {mixes.length === 0 ? (
-          <li className="rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-4 text-xs text-slate-400">
+          <li className="rounded-xl border border-dashed border-white/10 bg-surface-100/40 p-4 text-xs text-slate-400">
             Create a mix to unlock application drafting.
           </li>
         ) : null}

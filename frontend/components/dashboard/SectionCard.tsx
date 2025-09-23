@@ -13,7 +13,7 @@ export function SectionCard({ title, description, action, className, children }:
   return (
     <section
       className={cn(
-        'flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg transition hover:border-slate-700',
+        'flex flex-col gap-4 rounded-2xl border border-white/10 bg-surface-100/70 p-6 shadow-lg backdrop-blur transition hover:border-accent/40',
         className
       )}
     >

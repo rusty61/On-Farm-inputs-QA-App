@@ -37,8 +37,8 @@ export function WeatherSnapshotPanel({ selectedApplicationId, weather, onFetchWe
       title="Weather snapshot"
       description="Call the FastAPI weather endpoint (Blynk webhook) to enrich the current application."
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-        <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-400">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-white/10 bg-surface-200/60 p-4">
+        <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-slate-300">
           Blynk station ID
           <input
             type="text"
@@ -50,7 +50,7 @@ export function WeatherSnapshotPanel({ selectedApplicationId, weather, onFetchWe
         <button
           type="submit"
           disabled={!selectedApplicationId || submitting}
-          className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-gradient-to-r from-brand to-accent px-3 py-2 text-sm font-semibold text-white shadow transition hover:from-brand-light hover:to-accent-light disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Requesting…' : 'Fetch weather'}
         </button>
@@ -58,8 +58,8 @@ export function WeatherSnapshotPanel({ selectedApplicationId, weather, onFetchWe
       </form>
 
       {weather ? (
-        <div className="rounded-xl border border-brand/30 bg-brand/10 p-4 text-sm text-slate-100">
-          <h3 className="text-sm font-semibold text-brand-light">Latest snapshot</h3>
+        <div className="rounded-xl border border-accent/60 bg-surface-100/60 p-4 text-sm text-slate-100">
+          <h3 className="text-sm font-semibold text-accent-light">Latest snapshot</h3>
           <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">
             <div>
               <dt className="uppercase tracking-wide text-slate-400">Wind speed</dt>
@@ -80,7 +80,7 @@ export function WeatherSnapshotPanel({ selectedApplicationId, weather, onFetchWe
           </dl>
         </div>
       ) : (
-        <p className="rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-4 text-xs text-slate-400">
+        <p className="rounded-xl border border-dashed border-white/10 bg-surface-100/40 p-4 text-xs text-slate-400">
           Weather telemetry appears here once requested for the selected application.
         </p>
       )}

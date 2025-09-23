@@ -7,15 +7,23 @@
 }
 
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
+  color: #e2e8f0;
+  background-color: #030b1d;
+  background-image:
+    radial-gradient(circle at top left, rgba(5, 37, 168, 0.45), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(0, 179, 0, 0.35), transparent 50%),
+    linear-gradient(180deg, #030b1d 0%, #020414 100%);
+  @apply antialiased;
 }
 
 a {
-  @apply text-brand hover:text-brand-light transition-colors;
+  @apply text-brand-light transition-colors hover:text-accent-light;
 }
 
-input, select, textarea {
-  @apply bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent;
+input,
+select,
+textarea {
+  @apply rounded-md border border-white/10 bg-surface-100/80 px-3 py-2 text-sm text-surface-foreground placeholder:text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/60 focus:border-accent/60;
 }
 
 button {

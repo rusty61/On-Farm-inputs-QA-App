@@ -35,23 +35,30 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-3xl border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-3xl border border-white/10 bg-surface-100/70 p-8 shadow-xl backdrop-blur">
       <h1 className="text-2xl font-semibold text-white">Supabase access</h1>
       <p className="text-sm text-slate-300">
-        Use your Supabase Auth credentials to access the owner-scoped spray record console. Accounts require confirmation before
-        the QA workflow becomes available.
+        Use your Supabase Auth credentials to access the owner-scoped spray record console. Accounts require confirmation before the QA workflow becomes available.
       </p>
-      <div className="flex items-center gap-2 text-xs text-slate-400">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
         <button
           type="button"
-          className={`rounded-full px-3 py-1 ${mode === 'sign-in' ? 'bg-brand text-slate-950' : 'bg-slate-800 text-slate-300'}`}
+          className={`rounded-full px-3 py-1 transition ${
+            mode === 'sign-in'
+              ? 'bg-gradient-to-r from-brand to-accent text-white shadow'
+              : 'bg-surface-200/70 text-slate-300'
+          }`}
           onClick={() => setMode('sign-in')}
         >
           Sign in
         </button>
         <button
           type="button"
-          className={`rounded-full px-3 py-1 ${mode === 'sign-up' ? 'bg-brand text-slate-950' : 'bg-slate-800 text-slate-300'}`}
+          className={`rounded-full px-3 py-1 transition ${
+            mode === 'sign-up'
+              ? 'bg-gradient-to-r from-brand to-accent text-white shadow'
+              : 'bg-surface-200/70 text-slate-300'
+          }`}
           onClick={() => setMode('sign-up')}
         >
           Register
@@ -81,7 +88,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-md bg-gradient-to-r from-brand to-accent px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:from-brand-light hover:to-accent-light disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? 'Processing…' : mode === 'sign-in' ? 'Sign in' : 'Create account'}
         </button>
@@ -89,7 +96,7 @@ export default function LoginPage() {
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       <p className="text-sm text-amber-300">
         Configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in
-        <code className="mx-1 rounded bg-slate-900 px-1 py-0.5">.env.local</code> to authenticate against Supabase. Without
+        <code className="mx-1 rounded bg-surface-200/70 px-1 py-0.5 text-slate-100">.env.local</code> to authenticate against Supabase. Without
         credentials the console falls back to offline sessions.
       </p>
       {message ? <p className="text-sm text-emerald-400">{message}</p> : null}

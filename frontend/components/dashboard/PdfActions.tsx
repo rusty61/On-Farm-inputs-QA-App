@@ -20,10 +20,10 @@ export function PdfActions({ draft, selectedApplicationId, onGenerateOffline, on
         <button
           type="button"
           onClick={onGenerateOffline}
-          className="flex flex-col gap-2 rounded-2xl border border-brand bg-brand/10 p-6 text-left text-sm text-slate-100 transition hover:border-brand-light hover:bg-brand/20"
+          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-gradient-to-r from-brand/80 to-accent/80 p-6 text-left text-sm text-white shadow-lg transition hover:from-brand hover:to-accent"
         >
           <span className="text-lg font-semibold">Offline provisional PDF</span>
-          <span className="text-xs text-slate-200">
+          <span className="text-xs text-slate-100/90">
             Bundles the current draft, including selected paddocks, GPS snapshots, and mix details into a jsPDF download for
             offline audits.
           </span>
@@ -33,7 +33,7 @@ export function PdfActions({ draft, selectedApplicationId, onGenerateOffline, on
           type="button"
           disabled={!selectedApplicationId}
           onClick={onDownloadServer}
-          className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-left text-sm text-slate-100 transition hover:border-brand hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-surface-100/60 p-6 text-left text-sm text-slate-100 transition hover:border-accent/40 hover:text-white disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-surface-100/40 disabled:text-slate-400"
         >
           <span className="text-lg font-semibold">Authoritative Render PDF</span>
           <span className="text-xs text-slate-200">

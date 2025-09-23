@@ -10,9 +10,21 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#0EA5E9",
-          dark: "#0284C7",
-          light: "#38BDF8"
+          DEFAULT: "#0525a8",
+          dark: "#03197d",
+          light: "#4a80ff"
+        },
+        accent: {
+          DEFAULT: "#00b300",
+          dark: "#008f26",
+          light: "#38f87c"
+        },
+        surface: {
+          DEFAULT: "#050d24",
+          foreground: "#e2e8f0",
+          "100": "#07122f",
+          "200": "#0b1a3d",
+          "300": "#122550"
         }
       }
     }

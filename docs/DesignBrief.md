@@ -36,15 +36,13 @@ flowchart LR
 ```
 
 ## Data Relationships
-Owner-scoped data spans mixes, applications, and location records stored in Supabase. The data model links owners to farms and paddocks, captures per-application weather and GPS metadata, and tracks mix compositions for spray events. Paddock records retain the long-lived location for each field, while individual application_paddock rows can store a GPS snapshot whenever coordinates are supplied. No automated "within boundary" validation currently runs; stored GPS values reflect the readings provided by applicators.
+Owner-scoped data spans applications and location records stored in Supabase. The data model links owners to farms and paddocks and captures per-application weather and GPS metadata to document each spray event. Paddock records retain the long-lived location for each field, while individual application_paddock rows can store a GPS snapshot whenever coordinates are supplied. No automated "within boundary" validation currently runs; stored GPS values reflect the readings provided by applicators.
 
 ```mermaid
 erDiagram
   owners ||--o{ profiles : "has"
   owners ||--o{ farms : "has"
   owners ||--o{ paddocks : "has"
-  owners ||--o{ mixes : "has"
-  mixes ||--o{ mix_items : "has"
   owners ||--o{ applications : "owns"
   applications ||--o{ application_paddocks : "has"
 
@@ -74,22 +72,10 @@ erDiagram
     numeric gps_accuracy_m
     timestamptz gps_updated_at
   }
-  mixes {
-    uuid mix_id PK
-    uuid owner_id FK
-    text name
-  }
-  mix_items {
-    uuid item_id PK
-    uuid mix_id FK
-    text name
-    numeric rate_value
-    text rate_unit
-  }
   applications {
     uuid application_id PK
     uuid owner_id FK
-    uuid mix_id FK
+    uuid mix_id
     uuid operator_user_id
     timestamptz started_at
     timestamptz finished_at

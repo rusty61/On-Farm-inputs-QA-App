@@ -38,7 +38,7 @@ flowchart LR
 ```
 
 ## Data Relationships
-Owner-scoped data spans mixes, applications, and location records stored in Supabase. The data model links owners to farms and paddocks, captures per-application weather and GPS metadata, and tracks mix compositions for spray events. Coordinates are stored for each paddock and application record without performing on-ingest boundary validation.
+Owner-scoped data spans mixes, applications, and location records stored in Supabase. The data model links owners to farms and paddocks, captures per-application weather and GPS metadata, and tracks mix compositions for spray events. Coordinates are stored for each paddock and application record without performing on-ingest boundary validation while we await authoritative paddock boundary geometry.
 
 ```mermaid
 erDiagram
@@ -164,4 +164,4 @@ sequenceDiagram
 ## Project Milestones
 1. **Scaffold Complete** — Backend, frontend, and Supabase migrations in place to support core workflows.
 2. **Weather Integration & Finalize UX** — Connect weather fetch endpoint, surface finalize button in the UI, and ensure application finalization triggers PDF generation.
-3. **QA Audit Readiness** — Execute QA pass covering GPS accuracy, weather capture, mix management, and PDF outputs to validate readiness for audits.
+3. **QA Audit Readiness** — Execute QA pass covering GPS accuracy, weather capture, mix management, and PDF outputs to validate readiness for audits with GPS stored as captured pending boundary validation support.

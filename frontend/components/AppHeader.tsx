@@ -9,7 +9,8 @@ import { useSupabase } from '@/components/providers/SupabaseProvider';
 
 const navLinks = [
   { href: '/', label: 'Overview' },
-  { href: '/dashboard', label: 'Control Center' }
+  { href: '/dashboard', label: 'Control Center' },
+  { href: '/spray-prototype', label: 'Spray Prototype' }
 ];
 
 export function AppHeader() {

@@ -1,42 +1,25 @@
-from __future__ import annotations
-
-from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-from .config import get_settings
-from .routers import applications, farms, mixes, owners, paddocks, records, weather
+app = FastAPI()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Ensure JWKS cache warms up lazily on first request; nothing needed here yet.
-    yield
-
-
-settings = get_settings()
-app = FastAPI(title="Infield Spray Record API", lifespan=lifespan)
-
-if settings.allowed_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.allowed_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"]
-    )
-
-
-@app.get("/health")
-async def health() -> dict[str, bool]:
+@app.get("/healthz")
+def healthz():
     return {"ok": True}
 
 
-app.include_router(owners.router)
-app.include_router(farms.router)
-app.include_router(mixes.router)
-app.include_router(paddocks.router)
-app.include_router(applications.router)
-app.include_router(records.router)
-app.include_router(weather.router)
+# Try to attach routers, but don't crash the process if something is misconfigured.
+try:
+    from .routers import applications, farms, mixes, owners, paddocks, records, weather
+
+    app.include_router(applications.router)
+    app.include_router(records.router)
+    app.include_router(farms.router)
+    app.include_router(paddocks.router)
+    app.include_router(owners.router)
+    app.include_router(mixes.router)
+    app.include_router(weather.router)
+except Exception as e:
+    logging.getLogger("uvicorn.error").warning(f"Routers not attached at startup: {e}")

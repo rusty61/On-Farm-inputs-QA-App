@@ -21,6 +21,43 @@ class FarmResponse(BaseModel):
     created_at: datetime
 
 
+class MixItemCreate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    chemical: str = Field(..., min_length=1)
+    rate_l_per_ha: float = Field(..., alias="rateLPerHa", ge=0)
+    notes: str | None = None
+
+
+class MixCreate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    owner_id: uuid.UUID = Field(alias="ownerId")
+    name: str = Field(..., min_length=1)
+    total_water_l: float = Field(..., alias="totalWaterL", ge=0)
+    items: list[MixItemCreate]
+
+
+class MixItemResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: uuid.UUID
+    chemical: str
+    rate_l_per_ha: float = Field(alias="rateLPerHa")
+    notes: str | None
+
+
+class MixResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: uuid.UUID
+    owner_id: uuid.UUID = Field(alias="ownerId")
+    name: str
+    total_water_l: float = Field(alias="totalWaterL")
+    items: list[MixItemResponse]
+    created_at: datetime = Field(alias="createdAt")
+
+
 class PaddockCreate(BaseModel):
     name: str = Field(..., min_length=1)
     area_hectares: float | None = Field(default=None, ge=0)

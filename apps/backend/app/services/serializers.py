@@ -2,8 +2,14 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from ..models import Application, ApplicationPaddock, Paddock
-from ..schemas import ApplicationPaddockResponse, ApplicationResponse, PaddockResponse
+from ..models import Application, ApplicationPaddock, Mix, Paddock
+from ..schemas import (
+    ApplicationPaddockResponse,
+    ApplicationResponse,
+    MixItemResponse,
+    MixResponse,
+    PaddockResponse,
+)
 from ..utils import to_float
 
 
@@ -48,4 +54,27 @@ def serialize_application(application: Application) -> ApplicationResponse:
             )
             for link in paddocks
         ],
+    )
+
+
+def serialize_mix(mix: Mix) -> MixResponse:
+    total_water = to_float(mix.total_water_l)
+    items: list[MixItemResponse] = []
+    for item in mix.items:
+        rate = to_float(item.rate_l_per_ha)
+        items.append(
+            MixItemResponse(
+                id=item.id,
+                chemical=item.chemical,
+                rate_l_per_ha=rate if rate is not None else 0.0,
+                notes=item.notes,
+            )
+        )
+    return MixResponse(
+        id=mix.id,
+        owner_id=mix.owner_id,
+        name=mix.name,
+        total_water_l=total_water if total_water is not None else 0.0,
+        created_at=mix.created_at,
+        items=items,
     )

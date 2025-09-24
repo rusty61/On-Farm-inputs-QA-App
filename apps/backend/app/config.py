@@ -1,28 +1,26 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List
 
-from pydantic import AnyHttpUrl, BaseSettings, Field, validator
+from pydantic import AnyHttpUrl, Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application configuration loaded from environment variables."""
 
-    database_url: str = Field(..., env="DATABASE_URL")
-    allowed_origins: List[str] = Field(default_factory=list, env="ALLOWED_ORIGINS")
-    supabase_jwks_url: AnyHttpUrl = Field(..., env="SUPABASE_JWKS_URL")
-    supabase_expected_aud: str = Field("authenticated", env="SUPABASE_EXPECTED_AUD")
-    public_record_base_url: AnyHttpUrl = Field(..., env="PUBLIC_RECORD_BASE_URL")
-    environment: str = Field("development", env="FASTAPI_ENV")
-    jwks_cache_ttl_seconds: int = Field(3600, env="JWKS_CACHE_TTL_SECONDS")
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    database_url: str
+    allowed_origins: list[str] = Field(default_factory=list)
+    supabase_jwks_url: AnyHttpUrl
+    supabase_expected_aud: str = "authenticated"
+    public_record_base_url: AnyHttpUrl
+    environment: str = "development"
+    jwks_cache_ttl_seconds: int = 3600
 
-    @validator("allowed_origins", pre=True)
-    def _split_origins(cls, value: List[str] | str | None) -> List[str]:
+    @field_validator("allowed_origins", mode="before")
+    def _split_origins(cls, value: list[str] | str | None) -> list[str]:
         if not value:
             return []
         if isinstance(value, list):

@@ -95,12 +95,14 @@ class ApplicationResponse(BaseModel):
 
 
 class WeatherSnapshot(BaseModel):
-    station_id: str
-    wind_speed_ms: float | None = None
-    wind_direction_deg: float | None = None
-    temp_c: float | None = None
-    humidity_pct: float | None = None
-    fetched_at: datetime
+    model_config = ConfigDict(populate_by_name=True)
+
+    station_id: str = Field(alias="stationId")
+    wind_speed_ms: float | None = Field(default=None, alias="windSpeedMs")
+    wind_direction_deg: float | None = Field(default=None, alias="windDirectionDeg")
+    temp_c: float | None = Field(default=None, alias="temperatureC")
+    humidity_pct: float | None = Field(default=None, alias="humidityPct")
+    fetched_at: datetime = Field(alias="fetchedAt")
 
 
 class RecordResponse(BaseModel):

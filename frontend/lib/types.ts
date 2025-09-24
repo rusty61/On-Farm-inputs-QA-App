@@ -51,11 +51,12 @@ export interface Mix {
 }
 
 export interface WeatherSnapshot {
+  stationId: string;
   windSpeedMs: number | null;
   windDirectionDeg: number | null;
   temperatureC: number | null;
   humidityPct: number | null;
-  capturedAt?: string;
+  fetchedAt: string;
 }
 
 export interface ApplicationSummary {

@@ -1,4 +1,3 @@
-# apps/backend/app/auth.py
 from __future__ import annotations
 
 import asyncio
@@ -6,12 +5,10 @@ import json
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 import httpx
 import jwt
-from fastapi import Depends, HTTPException, Request, Security, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, Request, status
 from jwt import algorithms
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,8 +27,6 @@ class AuthContext:
 
 
 class JWKSVerifier:
-    """Caches JWKS and verifies RS256 JWTs (Supabase)."""
-
     def __init__(self, jwks_url: str, cache_ttl_seconds: int, expected_aud: str | None) -> None:
         self._jwks_url = jwks_url
         self._cache_ttl = cache_ttl_seconds
@@ -42,11 +37,11 @@ class JWKSVerifier:
 
     async def _refresh(self) -> None:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(self._jwks_url)
-            resp.raise_for_status()
-            data = resp.json()
+            response = await client.get(self._jwks_url)
+            response.raise_for_status()
+            data = response.json()
         keys = data.get("keys", [])
-        self._jwks = {str(k["kid"]): k for k in keys if "kid" in k}
+        self._jwks = {str(key["kid"]): key for key in keys if "kid" in key}
         self._cache_expiry = datetime.now(timezone.utc) + timedelta(seconds=self._cache_ttl)
 
     async def _get_key(self, kid: str) -> dict[str, object]:
@@ -58,7 +53,7 @@ class JWKSVerifier:
                 raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="JWKS unavailable")
             key = self._jwks.get(kid)
             if key is None:
-                # key rotation: refresh once
+                # Force refresh once more in case keys rotated
                 await self._refresh()
                 key = self._jwks.get(kid) if self._jwks else None
             if key is None:
@@ -70,15 +65,12 @@ class JWKSVerifier:
             headers = jwt.get_unverified_header(token)
         except jwt.PyJWTError as exc:  # type: ignore[attr-defined]
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token header") from exc
-
         kid = headers.get("kid")
         if not kid:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing key id")
-
         key_dict = await self._get_key(str(kid))
         key = algorithms.RSAAlgorithm.from_jwk(json.dumps(key_dict))
-        audience = settings.supabase_expected_aud or None
-
+        audience = self._expected_aud or None
         try:
             payload: dict[str, object] = jwt.decode(
                 token,
@@ -89,7 +81,6 @@ class JWKSVerifier:
             )
         except jwt.PyJWTError as exc:  # type: ignore[attr-defined]
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from exc
-
         return payload
 
 
@@ -99,9 +90,6 @@ _verifier = JWKSVerifier(
     cache_ttl_seconds=settings.jwks_cache_ttl_seconds,
     expected_aud=settings.supabase_expected_aud or None,
 )
-
-# Expose an HTTP Bearer scheme so FastAPI adds it to OpenAPI (/docs -> “Authorize”)
-bearer_scheme = HTTPBearer(bearerFormat="JWT", auto_error=False)
 
 
 async def _owner_from_profiles(session: AsyncSession, user_id: uuid.UUID) -> uuid.UUID:
@@ -113,18 +101,12 @@ async def _owner_from_profiles(session: AsyncSession, user_id: uuid.UUID) -> uui
 
 
 async def get_current_auth(
-    credentials: Optional[HTTPAuthorizationCredentials] = Security(bearer_scheme),
-    request: Request = None,
+    request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> AuthContext:
-    """
-    Resolve authentication either from a Bearer JWT (normal path) or
-    from dev headers X-Dev-User-Id / X-Dev-Owner-Id (local/dev tools).
-    """
-
-    # 1) Standard Bearer token (drives OpenAPI auth)
-    if credentials and credentials.credentials:
-        token = credentials.credentials
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1]
         claims = await _verifier.verify(token)
         sub = claims.get("sub")
         if not sub:
@@ -136,17 +118,14 @@ async def get_current_auth(
         owner_id = await _owner_from_profiles(session, user_id)
         return AuthContext(user_id=user_id, owner_id=owner_id, is_dev=False, token_claims=claims)
 
-    # 2) Dev header override (no JWT)
-    if request is not None:
-        dev_user = request.headers.get("X-Dev-User-Id")
-        dev_owner = request.headers.get("X-Dev-Owner-Id")
-        if dev_user and dev_owner:
-            try:
-                user_id = uuid.UUID(dev_user)
-                owner_id = uuid.UUID(dev_owner)
-            except ValueError as exc:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid dev headers") from exc
-            return AuthContext(user_id=user_id, owner_id=owner_id, is_dev=True, token_claims=None)
+    dev_user = request.headers.get("X-Dev-User-Id")
+    dev_owner = request.headers.get("X-Dev-Owner-Id")
+    if dev_user and dev_owner:
+        try:
+            user_id = uuid.UUID(dev_user)
+            owner_id = uuid.UUID(dev_owner)
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid dev headers") from exc
+        return AuthContext(user_id=user_id, owner_id=owner_id, is_dev=True, token_claims=None)
 
-    # 3) Otherwise unauthorized
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")

@@ -2,8 +2,16 @@ from __future__ import annotations
 
 from typing import Iterable
 
-from ..models import Application, ApplicationPaddock, Paddock
-from ..schemas import ApplicationPaddockResponse, ApplicationResponse, PaddockResponse
+from ..models import Application, ApplicationPaddock, Farm, Owner, Paddock
+from ..schemas import (
+    ApplicationPaddockResponse,
+    ApplicationResponse,
+    FarmPublic,
+    GPSPoint,
+    OwnerPublic,
+    PaddockPublic,
+    PaddockResponse,
+)
 from ..utils import to_float
 
 
@@ -17,6 +25,40 @@ def serialize_paddock(paddock: Paddock) -> PaddockResponse:
         gps_longitude=to_float(paddock.gps_longitude),
         gps_accuracy_m=to_float(paddock.gps_accuracy_m),
         gps_updated_at=paddock.gps_updated_at,
+        created_at=paddock.created_at,
+    )
+
+
+def serialize_owner(owner: Owner) -> OwnerPublic:
+    return OwnerPublic(id=owner.id, name=owner.name, created_at=owner.created_at)
+
+
+def serialize_farm(farm: Farm) -> FarmPublic:
+    return FarmPublic(
+        id=farm.id,
+        owner_id=farm.owner_id,
+        name=farm.name,
+        notes=farm.notes,
+        created_at=farm.created_at,
+    )
+
+
+def serialize_paddock_public(paddock: Paddock) -> PaddockPublic:
+    latitude = to_float(paddock.gps_latitude)
+    longitude = to_float(paddock.gps_longitude)
+    accuracy = to_float(paddock.gps_accuracy_m)
+    gps_point = None
+    if latitude is not None and longitude is not None:
+        gps_point = GPSPoint(latitude=latitude, longitude=longitude, accuracy=accuracy)
+    return PaddockPublic(
+        id=paddock.id,
+        owner_id=paddock.owner_id,
+        farm_id=paddock.farm_id,
+        name=paddock.name,
+        area_hectares=to_float(paddock.area_hectares),
+        gps_point=gps_point,
+        gps_accuracy_m=accuracy,
+        gps_captured_at=paddock.gps_updated_at,
         created_at=paddock.created_at,
     )
 

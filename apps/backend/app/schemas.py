@@ -7,6 +7,25 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
+def to_camel(string: str) -> str:
+    parts = string.split("_")
+    return parts[0] + "".join(word.capitalize() for word in parts[1:]) if parts else string
+
+
+class CamelModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, alias_generator=to_camel)
+
+
+class OwnerCreatePayload(BaseModel):
+    name: str = Field(..., min_length=1)
+
+
+class OwnerPublic(CamelModel):
+    id: uuid.UUID
+    name: str
+    created_at: datetime
+
+
 class FarmCreate(BaseModel):
     name: str = Field(..., min_length=1)
     notes: str | None = None
@@ -16,6 +35,20 @@ class FarmResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    name: str
+    notes: str | None
+    created_at: datetime
+
+
+class FarmCreatePayload(BaseModel):
+    ownerId: uuid.UUID | None = None
+    name: str = Field(..., min_length=1)
+    notes: str | None = None
+
+
+class FarmPublic(CamelModel):
+    id: uuid.UUID
+    owner_id: uuid.UUID
     name: str
     notes: str | None
     created_at: datetime
@@ -46,6 +79,37 @@ class PaddockResponse(BaseModel):
     gps_accuracy_m: float | None
     gps_updated_at: datetime | None
     created_at: datetime
+
+
+class PaddockCreatePayload(BaseModel):
+    ownerId: uuid.UUID | None = None
+    farmId: uuid.UUID
+    name: str = Field(..., min_length=1)
+    areaHectares: float | None = Field(default=None, ge=0)
+
+
+class PaddockGpsUpdatePayload(BaseModel):
+    latitude: float
+    longitude: float
+    accuracy: float | None = Field(default=None, ge=0)
+
+
+class GPSPoint(BaseModel):
+    latitude: float
+    longitude: float
+    accuracy: float | None = None
+
+
+class PaddockPublic(CamelModel):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+    farm_id: uuid.UUID
+    name: str
+    area_hectares: float | None
+    gps_point: GPSPoint | None = None
+    gps_accuracy_m: float | None = None
+    gps_captured_at: datetime | None = None
+    created_at: datetime | None = None
 
 
 class ApplicationPaddockPayload(BaseModel):

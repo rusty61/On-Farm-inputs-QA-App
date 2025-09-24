@@ -13,7 +13,7 @@ from ..auth import AuthContext, get_current_auth
 from ..db import get_db_session
 from ..models import Application, ApplicationPaddock
 from ..pdf import generate_application_pdf
-from ..schemas import ApplicationCreate, ApplicationResponse
+from ..schemas import ApplicationCreate, ApplicationPaddockPayload, ApplicationResponse
 from ..services.serializers import serialize_application
 from ..services.ownership import ensure_application, ensure_paddock
 
@@ -42,7 +42,14 @@ async def start_application(
     auth: AuthContext = Depends(get_current_auth),
     session: AsyncSession = Depends(get_db_session),
 ) -> ApplicationResponse:
-    if not payload.paddocks:
+    paddock_payloads: list[ApplicationPaddockPayload] | None = payload.paddocks
+    if not paddock_payloads and payload.paddock_ids:
+        paddock_payloads = [
+            ApplicationPaddockPayload(paddock_id=paddock_id)
+            for paddock_id in payload.paddock_ids
+        ]
+
+    if not paddock_payloads:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="At least one paddock is required")
 
     started_at = payload.started_at or datetime.now(timezone.utc)
@@ -58,7 +65,7 @@ async def start_application(
     session.add(application)
     await session.flush()
 
-    for paddock_payload in payload.paddocks:
+    for paddock_payload in paddock_payloads:
         paddock = await ensure_paddock(session, paddock_payload.paddock_id, auth.owner_id)
         gps_captured_at = None
         if paddock_payload.gps_lat is not None and paddock_payload.gps_lng is not None:

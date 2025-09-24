@@ -13,7 +13,10 @@ from .config import get_settings
 from .models import Application, ApplicationPaddock
 from .utils import to_float
 
-_env = Environment(loader=PackageLoader("app", "templates"), autoescape=select_autoescape(["html", "xml"]))
+_env = Environment(
+    loader=PackageLoader("apps.backend.app", "templates"),
+    autoescape=select_autoescape(["html", "xml"]),
+)
 
 
 def _qr_data_uri(url: str) -> str:

@@ -62,17 +62,3 @@ async def preview_application(request: Request, application_id: str):
     }
     # Make sure the file inside that folder is actually named "templates.html"
     return templates.TemplateResponse("templates.html", context)
-    @router.get("/test-template")
-def test_template(request: Request):
-    ctx = {
-        "request": request,
-        "owner": {"name": "My Farm Pty Ltd"},
-        "application": {"id": "TEST", "started_at": "now", "finalized": True, "notes": "hello"},
-        "paddocks": [{"name":"North Back","gps_latitude":-36.12,"gps_longitude":144.75,"gps_accuracy_m":"-","gps_captured_at":"now"}],
-        "weather": {"wind_speed_ms": 12.5*(1000/3600), "wind_direction_deg":240, "temp_c":20.4, "humidity_pct":58},
-        "qr_code": None,
-        "record_url": None,
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
-    }
-    return templates.TemplateResponse("templates.html", ctx)
-

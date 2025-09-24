@@ -461,7 +461,7 @@ export default function DashboardPage() {
         stationId,
         applicationId: selectedApplicationId
       });
-      setWeather({ ...snapshot, capturedAt: new Date().toISOString() });
+      setWeather(snapshot);
       setApplications((prev) =>
         prev.map((application) =>
           application.id === selectedApplicationId

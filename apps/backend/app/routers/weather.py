@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 import uuid
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -49,25 +50,31 @@ async def _fetch_weather_payload(station: BlynkStation) -> dict[str, float | Non
     }
 
 
+class WeatherFetchRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    station_id: str = Field(..., min_length=1, alias="stationId")
+    application_id: uuid.UUID | None = Field(default=None, alias="applicationId")
+
+
 @router.post("/fetch", response_model=WeatherSnapshot)
 async def fetch_weather(
-    station_id: str = Query(..., min_length=1),
-    application_id: uuid.UUID | None = Query(default=None),
+    request: WeatherFetchRequest,
     auth: AuthContext = Depends(get_current_auth),
     session: AsyncSession = Depends(get_db_session),
 ) -> WeatherSnapshot:
-    station = await _get_station(session, auth.owner_id, station_id)
+    station = await _get_station(session, auth.owner_id, request.station_id)
     if station is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Weather station not found")
 
     payload = await _fetch_weather_payload(station)
     fetched_at = datetime.now(timezone.utc)
 
-    if application_id is not None:
-        await ensure_application(session, application_id, auth.owner_id)
+    if request.application_id is not None:
+        await ensure_application(session, request.application_id, auth.owner_id)
         await session.execute(
             update(Application)
-            .where(Application.id == application_id, Application.owner_id == auth.owner_id)
+            .where(Application.id == request.application_id, Application.owner_id == auth.owner_id)
             .values(
                 wind_speed_ms=payload["wind_speed_ms"],
                 wind_direction_deg=payload["wind_direction_deg"],

@@ -1,12 +1,28 @@
-# apps/backend/main.py
-import os
+"""FastAPI entrypoint for the backend service."""
+from __future__ import annotations
+
 from fastapi import FastAPI
-from apps.backend.routes.records import router as records_router
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Infield Spray Record Backend")
-app.include_router(records_router)
+from .routes import records
 
-# Optional: health check
+app = FastAPI(title="On-Farm Inputs QA Backend")
+
+# Allow local development tools by default; production can tighten via env vars later.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 @app.get("/healthz")
-def healthz():
+async def healthz() -> dict[str, bool]:
+    """Simple health check used by Render and smoke tests."""
     return {"ok": True}
+
+
+# Application routes -------------------------------------------------------
+app.include_router(records.router, prefix="/applications", tags=["applications"])

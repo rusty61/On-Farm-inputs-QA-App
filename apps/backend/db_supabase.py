@@ -73,7 +73,7 @@ def upload_pdf(storage_path: str, pdf_bytes: bytes) -> None:
     bucket.upload(
         storage_path,
         pdf_bytes,
-        options={"contentType": "application/pdf", "upsert": True},
+        {"content_type": "application/pdf", "upsert": True},
     )
 
 

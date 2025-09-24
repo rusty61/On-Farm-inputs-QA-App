@@ -48,20 +48,16 @@ class PaddockResponse(BaseModel):
     created_at: datetime
 
 
-class ApplicationPaddockPayload(BaseModel):
-    paddock_id: uuid.UUID
-    gps_lat: float | None = None
-    gps_lng: float | None = None
-    gps_accuracy_m: float | None = Field(default=None, ge=0)
-
-
 class ApplicationCreate(BaseModel):
-    paddocks: list[ApplicationPaddockPayload]
-    mix_id: uuid.UUID | None = None
-    started_at: datetime | None = None
-    operator_user_id: uuid.UUID | None = None
+    model_config = ConfigDict(populate_by_name=True)
+
+    owner_id: uuid.UUID = Field(alias="ownerId")
+    mix_id: uuid.UUID = Field(alias="mixId")
+    paddock_ids: list[uuid.UUID] = Field(alias="paddockIds", min_length=1)
+    started_at: datetime = Field(alias="startedAt")
+    operator_name: str | None = Field(default=None, alias="operatorName")
     notes: str | None = None
-    water_source: str | None = None
+    water_source: str | None = Field(default=None, alias="waterSource")
 
 
 class ApplicationPaddockResponse(BaseModel):
@@ -92,6 +88,28 @@ class ApplicationResponse(BaseModel):
     humidity_pct: float | None
     created_at: datetime
     paddocks: list[ApplicationPaddockResponse]
+
+
+class WeatherSummary(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    wind_speed_ms: float | None = Field(default=None, serialization_alias="windSpeedMs")
+    wind_direction_deg: float | None = Field(default=None, serialization_alias="windDirectionDeg")
+    temp_c: float | None = Field(default=None, serialization_alias="temperatureC")
+    humidity_pct: float | None = Field(default=None, serialization_alias="humidityPct")
+
+
+class ApplicationSummary(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: uuid.UUID
+    owner_id: uuid.UUID = Field(serialization_alias="ownerId")
+    mix_id: uuid.UUID | None = Field(default=None, serialization_alias="mixId")
+    paddock_ids: list[uuid.UUID] = Field(serialization_alias="paddockIds")
+    started_at: datetime = Field(serialization_alias="startedAt")
+    finished_at: datetime | None = Field(default=None, serialization_alias="finishedAt")
+    finalized: bool
+    weather: WeatherSummary | None = Field(default=None, serialization_alias="weather")
 
 
 class WeatherSnapshot(BaseModel):

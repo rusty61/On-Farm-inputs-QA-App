@@ -1,12 +1,12 @@
-# apps/backend/main.py
-import os
-from fastapi import FastAPI
-from apps.backend.routes.records import router as records_router
+"""Compatibility wrapper for the FastAPI application.
 
-app = FastAPI(title="Infield Spray Record Backend")
-app.include_router(records_router)
+Render deployments historically imported ``apps.backend.main:app``.
+This module now simply re-exports the actual application defined in
+``apps.backend.app.main`` so the legacy import path continues to work.
+"""
 
-# Optional: health check
-@app.get("/healthz")
-def healthz():
-    return {"ok": True}
+from apps.backend.app.main import app as _app
+
+__all__ = ["app"]
+
+app = _app

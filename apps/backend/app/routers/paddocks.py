@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth import AuthContext, get_current_auth
@@ -48,12 +48,17 @@ async def update_paddock(
     return serialize_paddock(paddock)
 
 
-@router.delete("/{paddock_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{paddock_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 async def delete_paddock(
     paddock_id: uuid.UUID,
     auth: AuthContext = Depends(get_current_auth),
     session: AsyncSession = Depends(get_db_session),
-) -> None:
+) -> Response:
     paddock = await ensure_paddock(session, paddock_id, auth.owner_id)
     await session.delete(paddock)
     await session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

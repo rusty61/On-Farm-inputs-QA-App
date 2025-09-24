@@ -25,6 +25,7 @@ class Owner(Base):
     farms: Mapped[list["Farm"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     paddocks: Mapped[list["Paddock"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     applications: Mapped[list["Application"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    mixes: Mapped[list["Mix"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
 
 
 class Profile(Base):
@@ -137,6 +138,37 @@ class ApplicationPaddock(Base):
 
     application: Mapped[Application] = relationship(back_populates="paddocks")
     paddock: Mapped[Paddock] = relationship(back_populates="application_links")
+
+
+class Mix(Base):
+    __tablename__ = "mixes"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("owners.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    total_water_l: Mapped[float] = mapped_column(Numeric, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    owner: Mapped[Owner] = relationship(back_populates="mixes")
+    items: Mapped[list["MixItem"]] = relationship(back_populates="mix", cascade="all, delete-orphan")
+
+
+class MixItem(Base):
+    __tablename__ = "mix_items"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    mix_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("mixes.id", ondelete="CASCADE"), nullable=False
+    )
+    chemical: Mapped[str] = mapped_column(String, nullable=False)
+    rate_l_per_ha: Mapped[float] = mapped_column(Numeric, nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    mix: Mapped[Mix] = relationship(back_populates="items")
 
 
 class BlynkStation(Base):

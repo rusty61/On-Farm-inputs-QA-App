@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .routers import applications, farms, owners, paddocks, records, weather
+from .routers import applications, farms, mixes, owners, paddocks, records, weather
 
 
 @asynccontextmanager
@@ -35,6 +35,7 @@ async def health() -> dict[str, bool]:
 
 app.include_router(owners.router)
 app.include_router(farms.router)
+app.include_router(mixes.router)
 app.include_router(paddocks.router)
 app.include_router(applications.router)
 app.include_router(records.router)

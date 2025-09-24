@@ -3,12 +3,12 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from supabase import create_client, Client  # ✅ storage upload
 from ..auth import AuthContext, get_current_auth
 from ..db import get_db_session
 from ..models import Application, ApplicationPaddock
@@ -16,6 +16,7 @@ from ..pdf import generate_application_pdf
 from ..schemas import ApplicationCreate, ApplicationPaddockPayload, ApplicationSummary
 from ..services.serializers import serialize_application_summary
 from ..services.ownership import ensure_application, ensure_paddock
+from ..config import get_settings  # ✅ read bucket/config
 
 router = APIRouter(prefix="/api/applications", tags=["applications"])
 
@@ -70,10 +71,7 @@ async def start_application(
 
     paddock_payloads: list[ApplicationPaddockPayload] | None = payload.paddocks
     if not paddock_payloads and payload.paddock_ids:
-        paddock_payloads = [
-            ApplicationPaddockPayload(paddock_id=paddock_id)
-            for paddock_id in payload.paddock_ids
-        ]
+        paddock_payloads = [ApplicationPaddockPayload(paddock_id=pid) for pid in payload.paddock_ids]
 
     if not paddock_payloads:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="At least one paddock is required")
@@ -109,6 +107,7 @@ async def start_application(
             gps_captured_at=gps_captured_at,
         )
         session.add(link)
+
     await session.commit()
     application = await _load_application(session, application.id, owner_id)
     return serialize_application_summary(application)
@@ -117,13 +116,43 @@ async def start_application(
 @router.post("/{application_id}/finalize", response_model=ApplicationSummary)
 async def finalize_application(
     application_id: uuid.UUID,
+    response: Response,
     auth: AuthContext = Depends(get_current_auth),
     session: AsyncSession = Depends(get_db_session),
 ) -> ApplicationSummary:
+    # 1) Ensure we own it
     application = await ensure_application(session, application_id, auth.owner_id)
-    if application.finalized:
-        return serialize_application_summary(await _load_application(session, application_id, auth.owner_id))
 
+    # 2) Render PDF
+    try:
+        pdf_bytes = generate_application_pdf(application)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF render failed: {e!s}")
+
+    # 3) Upload to Supabase Storage
+    settings = get_settings()
+    bucket = settings.supabase_bucket
+    if not bucket:
+        raise HTTPException(status_code=500, detail="SUPABASE_BUCKET not configured")
+
+    key = f"applications/{application_id}/application-{application_id}.pdf"
+
+    try:
+        sb: Client = create_client(str(settings.supabase_url), str(settings.supabase_service_role_key))
+        # Upsert so multiple finalizes overwrite the file
+        sb.storage.from_(bucket).upload(key, pdf_bytes, {"content-type": "application/pdf", "upsert": True})
+        # Choose URL strategy based on bucket privacy
+        try:
+            pdf_url = sb.storage.from_(bucket).get_public_url(key)
+        except Exception:
+            # private bucket → signed URL for 24h
+            pdf_url = sb.storage.from_(bucket).create_signed_url(key, expires_in=60 * 60 * 24)["signedURL"]
+        # Expose it in a response header (body remains ApplicationSummary)
+        response.headers["X-PDF-URL"] = pdf_url
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Storage upload failed: {e!s}")
+
+    # 4) Mark finalized
     finished_at = datetime.now(timezone.utc)
     await session.execute(
         update(Application)
@@ -131,6 +160,8 @@ async def finalize_application(
         .values(finalized=True, finished_at=finished_at)
     )
     await session.commit()
+
+    # 5) Return fresh summary
     application = await _load_application(session, application_id, auth.owner_id)
     return serialize_application_summary(application)
 
@@ -144,5 +175,5 @@ async def export_application_pdf(
     application = await _load_application(session, application_id, auth.owner_id)
     pdf_bytes = generate_application_pdf(application)
     filename = f"application-{application_id}.pdf"
-    headers = {"Content-Disposition": f"inline; filename=\"{filename}\""}
+    headers = {"Content-Disposition": f'inline; filename="{filename}"'}
     return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)

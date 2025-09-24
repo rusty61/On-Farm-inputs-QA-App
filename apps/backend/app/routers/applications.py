@@ -8,7 +8,6 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from supabase import create_client, Client  # ✅ storage upload
 from ..auth import AuthContext, get_current_auth
 from ..db import get_db_session
 from ..models import Application, ApplicationPaddock
@@ -16,7 +15,7 @@ from ..pdf import generate_application_pdf
 from ..schemas import ApplicationCreate, ApplicationPaddockPayload, ApplicationSummary
 from ..services.serializers import serialize_application_summary
 from ..services.ownership import ensure_application, ensure_paddock
-from ..config import get_settings  # ✅ read bucket/config
+from ..config import get_settings
 
 router = APIRouter(prefix="/api/applications", tags=["applications"])
 
@@ -89,21 +88,18 @@ async def start_application(
     session.add(application)
     await session.flush()
 
-    for paddock_payload in paddock_payloads:
-        await ensure_paddock(session, paddock_payload.paddock_id, owner_id)
-        gps_lat = paddock_payload.gps_lat
-        gps_lng = paddock_payload.gps_lng
-        gps_accuracy = paddock_payload.gps_accuracy_m
+    for p in paddock_payloads:
+        await ensure_paddock(session, p.paddock_id, owner_id)
         gps_captured_at = None
-        if gps_lat is not None and gps_lng is not None:
+        if p.gps_lat is not None and p.gps_lng is not None:
             gps_captured_at = datetime.now(timezone.utc)
         link = ApplicationPaddock(
             owner_id=owner_id,
             application_id=application.id,
-            paddock_id=paddock_payload.paddock_id,
-            gps_latitude=gps_lat,
-            gps_longitude=gps_lng,
-            gps_accuracy_m=gps_accuracy,
+            paddock_id=p.paddock_id,
+            gps_latitude=p.gps_lat,
+            gps_longitude=p.gps_lng,
+            gps_accuracy_m=p.gps_accuracy_m,
             gps_captured_at=gps_captured_at,
         )
         session.add(link)
@@ -129,26 +125,41 @@ async def finalize_application(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PDF render failed: {e!s}")
 
-    # 3) Upload to Supabase Storage
+    # 3) Upload to Supabase via REST (upsert)
+    import httpx  # ensure httpx is in requirements.txt
     settings = get_settings()
     bucket = settings.supabase_bucket
     if not bucket:
         raise HTTPException(status_code=500, detail="SUPABASE_BUCKET not configured")
 
     key = f"applications/{application_id}/application-{application_id}.pdf"
+    upload_url = f"{settings.supabase_url}/storage/v1/object/{bucket}/{key}"
+    headers = {
+        "Authorization": f"Bearer {settings.supabase_service_role_key}",
+        "Content-Type": "application/pdf",
+        "x-upsert": "true",
+    }
 
     try:
-        sb: Client = create_client(str(settings.supabase_url), str(settings.supabase_service_role_key))
-        # Upsert so multiple finalizes overwrite the file
-        sb.storage.from_(bucket).upload(key, pdf_bytes, {"content-type": "application/pdf", "upsert": True})
-        # Choose URL strategy based on bucket privacy
-        try:
-            pdf_url = sb.storage.from_(bucket).get_public_url(key)
-        except Exception:
-            # private bucket → signed URL for 24h
-            pdf_url = sb.storage.from_(bucket).create_signed_url(key, expires_in=60 * 60 * 24)["signedURL"]
-        # Expose it in a response header (body remains ApplicationSummary)
-        response.headers["X-PDF-URL"] = pdf_url
+        async with httpx.AsyncClient(timeout=60) as client:
+            r = await client.post(upload_url, content=pdf_bytes, headers=headers)
+            if r.status_code not in (200, 201):
+                raise HTTPException(status_code=500, detail=f"Storage upload failed: {r.status_code} {r.text}")
+
+            # If bucket is PUBLIC:
+            pdf_url = f"{settings.supabase_url}/storage/v1/object/public/{bucket}/{key}"
+
+            # If bucket is PRIVATE, use this instead:
+            # sign_url = f"{settings.supabase_url}/storage/v1/object/sign/{bucket}/{key}"
+            # rs = await client.post(sign_url, headers={
+            #     "Authorization": f"Bearer {settings.supabase_service_role_key}",
+            #     "Content-Type": "application/json",
+            # }, json={"expiresIn": 60 * 60 * 24})
+            # if rs.status_code != 200:
+            #     raise HTTPException(status_code=500, detail=f"Sign URL failed: {rs.status_code} {rs.text}")
+            # pdf_url = settings.supabase_url + rs.json()["signedURL"]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Storage upload failed: {e!s}")
 
@@ -161,8 +172,9 @@ async def finalize_application(
     )
     await session.commit()
 
-    # 5) Return fresh summary
+    # 5) Return fresh summary & expose URL in a header
     application = await _load_application(session, application_id, auth.owner_id)
+    response.headers["X-PDF-URL"] = pdf_url
     return serialize_application_summary(application)
 
 

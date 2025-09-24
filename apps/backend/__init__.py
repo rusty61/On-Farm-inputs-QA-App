@@ -12,4 +12,4 @@ app = _import_module("apps.backend.app")
 main = _import_module("apps.backend.main")
 routes = _import_module("apps.backend.routes")
 
-__all__ = ["app", "main", "routes"]
+__all__ = []

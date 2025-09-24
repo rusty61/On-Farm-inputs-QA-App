@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+def generate_application_pdf(html_str: str) -> bytes:
+    # Lazy import so the app can boot even if system libs are missing at first
+    from weasyprint import HTML
+    return HTML(string=html_str, base_url=".").write_pdf()
+
 import base64
 from datetime import datetime, timezone
 from io import BytesIO

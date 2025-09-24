@@ -48,13 +48,22 @@ class PaddockResponse(BaseModel):
     created_at: datetime
 
 
+class ApplicationPaddockPayload(BaseModel):
+    paddock_id: uuid.UUID
+    gps_lat: float | None = None
+    gps_lng: float | None = None
+    gps_accuracy_m: float | None = Field(default=None, ge=0)
+
+
 class ApplicationCreate(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    owner_id: uuid.UUID = Field(alias="ownerId")
-    mix_id: uuid.UUID = Field(alias="mixId")
-    paddock_ids: list[uuid.UUID] = Field(alias="paddockIds", min_length=1)
-    started_at: datetime = Field(alias="startedAt")
+    owner_id: uuid.UUID | None = Field(default=None, alias="ownerId")
+    mix_id: uuid.UUID | None = Field(default=None, alias="mixId")
+    paddock_ids: list[uuid.UUID] | None = Field(default=None, alias="paddockIds")
+    paddocks: list[ApplicationPaddockPayload] | None = None
+    started_at: datetime | None = Field(default=None, alias="startedAt")
+    operator_user_id: uuid.UUID | None = Field(default=None, alias="operatorUserId")
     operator_name: str | None = Field(default=None, alias="operatorName")
     notes: str | None = None
     water_source: str | None = Field(default=None, alias="waterSource")

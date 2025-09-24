@@ -131,6 +131,28 @@ class ApplicationResponse(BaseModel):
     paddocks: list[ApplicationPaddockResponse]
 
 
+class WeatherSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    wind_speed_ms: float | None = Field(default=None, alias="windSpeedMs")
+    wind_direction_deg: float | None = Field(default=None, alias="windDirectionDeg")
+    temp_c: float | None = Field(default=None, alias="temperatureC")
+    humidity_pct: float | None = Field(default=None, alias="humidityPct")
+
+
+class ApplicationSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: uuid.UUID
+    owner_id: uuid.UUID = Field(alias="ownerId")
+    mix_id: uuid.UUID | None = Field(default=None, alias="mixId")
+    paddock_ids: list[uuid.UUID] = Field(alias="paddockIds")
+    started_at: datetime = Field(alias="startedAt")
+    finished_at: datetime | None = Field(default=None, alias="finishedAt")
+    finalized: bool
+    weather: WeatherSummary | None = None
+
+
 class WeatherSnapshot(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 

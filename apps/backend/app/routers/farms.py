@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth import AuthContext, get_current_auth
 from ..db import get_db_session
+from ..models import Paddock
 from ..schemas import PaddockCreate, PaddockResponse
 from ..services.ownership import ensure_farm
 from ..services.serializers import serialize_paddock

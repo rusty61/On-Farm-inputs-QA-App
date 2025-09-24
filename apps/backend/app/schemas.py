@@ -86,19 +86,26 @@ class PaddockResponse(BaseModel):
 
 
 class ApplicationPaddockPayload(BaseModel):
-    paddock_id: uuid.UUID
-    gps_lat: float | None = None
-    gps_lng: float | None = None
-    gps_accuracy_m: float | None = Field(default=None, ge=0)
+    model_config = ConfigDict(populate_by_name=True)
+
+    paddock_id: uuid.UUID = Field(alias="paddockId")
+    gps_lat: float | None = Field(default=None, alias="gpsLat")
+    gps_lng: float | None = Field(default=None, alias="gpsLng")
+    gps_accuracy_m: float | None = Field(default=None, ge=0, alias="gpsAccuracyM")
 
 
 class ApplicationCreate(BaseModel):
-    paddocks: list[ApplicationPaddockPayload]
-    mix_id: uuid.UUID | None = None
-    started_at: datetime | None = None
-    operator_user_id: uuid.UUID | None = None
+    model_config = ConfigDict(populate_by_name=True)
+
+    owner_id: uuid.UUID | None = Field(default=None, alias="ownerId")
+    mix_id: uuid.UUID | None = Field(default=None, alias="mixId")
+    paddock_ids: list[uuid.UUID] | None = Field(default=None, alias="paddockIds")
+    paddocks: list[ApplicationPaddockPayload] | None = None
+    started_at: datetime | None = Field(default=None, alias="startedAt")
+    operator_user_id: uuid.UUID | None = Field(default=None, alias="operatorUserId")
+    operator_name: str | None = Field(default=None, alias="operatorName")
     notes: str | None = None
-    water_source: str | None = None
+    water_source: str | None = Field(default=None, alias="waterSource")
 
 
 class ApplicationPaddockResponse(BaseModel):
@@ -129,6 +136,28 @@ class ApplicationResponse(BaseModel):
     humidity_pct: float | None
     created_at: datetime
     paddocks: list[ApplicationPaddockResponse]
+
+
+class WeatherSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    wind_speed_ms: float | None = Field(default=None, alias="windSpeedMs")
+    wind_direction_deg: float | None = Field(default=None, alias="windDirectionDeg")
+    temp_c: float | None = Field(default=None, alias="temperatureC")
+    humidity_pct: float | None = Field(default=None, alias="humidityPct")
+
+
+class ApplicationSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: uuid.UUID
+    owner_id: uuid.UUID = Field(alias="ownerId")
+    mix_id: uuid.UUID | None = Field(default=None, alias="mixId")
+    paddock_ids: list[uuid.UUID] = Field(alias="paddockIds")
+    started_at: datetime = Field(alias="startedAt")
+    finished_at: datetime | None = Field(default=None, alias="finishedAt")
+    finalized: bool
+    weather: WeatherSummary | None = None
 
 
 class WeatherSnapshot(BaseModel):

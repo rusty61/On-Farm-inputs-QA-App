@@ -6,9 +6,11 @@ from ..models import Application, ApplicationPaddock, Mix, Paddock
 from ..schemas import (
     ApplicationPaddockResponse,
     ApplicationResponse,
+    ApplicationSummary,
     MixItemResponse,
     MixResponse,
     PaddockResponse,
+    WeatherSummary,
 )
 from ..utils import to_float
 
@@ -54,6 +56,32 @@ def serialize_application(application: Application) -> ApplicationResponse:
             )
             for link in paddocks
         ],
+    )
+
+
+def serialize_application_summary(application: Application) -> ApplicationSummary:
+    paddock_ids = [link.paddock_id for link in application.paddocks]
+    wind_speed = to_float(application.wind_speed_ms)
+    wind_direction = to_float(application.wind_direction_deg)
+    temperature = to_float(application.temp_c)
+    humidity = to_float(application.humidity_pct)
+    weather: WeatherSummary | None = None
+    if any(value is not None for value in (wind_speed, wind_direction, temperature, humidity)):
+        weather = WeatherSummary(
+            wind_speed_ms=wind_speed,
+            wind_direction_deg=wind_direction,
+            temp_c=temperature,
+            humidity_pct=humidity,
+        )
+    return ApplicationSummary(
+        id=application.id,
+        owner_id=application.owner_id,
+        mix_id=application.mix_id,
+        paddock_ids=paddock_ids,
+        started_at=application.started_at,
+        finished_at=application.finished_at,
+        finalized=application.finalized,
+        weather=weather,
     )
 
 

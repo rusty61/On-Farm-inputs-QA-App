@@ -49,10 +49,12 @@ class PaddockResponse(BaseModel):
 
 
 class ApplicationPaddockPayload(BaseModel):
-    paddock_id: uuid.UUID
-    gps_lat: float | None = None
-    gps_lng: float | None = None
-    gps_accuracy_m: float | None = Field(default=None, ge=0)
+    model_config = ConfigDict(populate_by_name=True)
+
+    paddock_id: uuid.UUID = Field(alias="paddockId")
+    gps_lat: float | None = Field(default=None, alias="gpsLat")
+    gps_lng: float | None = Field(default=None, alias="gpsLng")
+    gps_accuracy_m: float | None = Field(default=None, ge=0, alias="gpsAccuracyM")
 
 
 class ApplicationCreate(BaseModel):

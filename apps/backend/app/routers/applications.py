@@ -87,7 +87,7 @@ async def start_application(
 
     started_at = payload.started_at or datetime.now(timezone.utc)
     application = Application(
-        owner_id=auth.owner_id,
+        owner_id=owner_id,
         mix_id=payload.mix_id,
         operator_user_id=payload.operator_user_id or auth.user_id,
         started_at=started_at,
@@ -99,12 +99,12 @@ async def start_application(
     await session.flush()
 
     for paddock_id, gps_lat, gps_lng, gps_accuracy in paddock_inputs:
-        await ensure_paddock(session, paddock_id, auth.owner_id)
+        await ensure_paddock(session, paddock_id, owner_id)
         gps_captured_at = None
         if gps_lat is not None and gps_lng is not None:
             gps_captured_at = datetime.now(timezone.utc)
         link = ApplicationPaddock(
-            owner_id=auth.owner_id,
+            owner_id=owner_id,
             application_id=application.id,
             paddock_id=paddock_id,
             gps_latitude=gps_lat,
@@ -114,7 +114,7 @@ async def start_application(
         )
         session.add(link)
     await session.commit()
-    application = await _load_application(session, application.id, auth.owner_id)
+    application = await _load_application(session, application.id, owner_id)
     return serialize_application_summary(application)
 
 
